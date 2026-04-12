@@ -1,0 +1,109 @@
+# =============================================
+# github-client .gitignore
+# =============================================
+
+# Build output directories
+target/
+build/
+builddir/
+github-client
+
+# Binary executables
+github-client
+github_client
+*.exe
+
+# =============================================
+# Autotools / GNU Make generated files
+# =============================================
+Makefile
+Makefile.in
+Makefile.am
+configure
+configure.ac
+config.h
+config.h.in
+config.log
+config.status
+config.cache
+stamp-h1
+aclocal.m4
+autom4te.cache/
+compile
+depcomp
+install-sh
+missing
+configure~
+
+# Object files and dependencies
+*.o
+*.lo
+*.la
+.deps/
+.dirstamp
+
+# Source-level generated files
+src/main/c/.deps/
+src/main/c/.dirstamp
+src/main/c/*.o
+
+# =============================================
+# Gradle files
+# =============================================
+.gradle/
+build/
+out/
+*.gradle
+gradlew
+gradlew.bat
+.gradle-wrapper/
+
+# Gradle cache
+.caches/
+
+# =============================================
+# Ant / Maven style (just in case)
+# =============================================
+build.xml~
+*.class
+
+# =============================================
+# Temporary and editor files
+# =============================================
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# IDE / Editor directories
+.vscode/
+.idea/
+*.iml
+.project
+.settings/
+.eclipse/
+
+# Logs
+*.log
+logs/
+
+# =============================================
+# CIAO / Project specific
+# =============================================
+project.sh
+config.*
+
+# Ignore backup files
+*.bak
+*.backup
+
+# =============================================
+# Comments
+# =============================================
+# This .gitignore is designed to cover:
+# - Simple GCC build (target/)
+# - GNU Make / Autotools
+# - Gradle builds
+# - Ant builds
+# - Common editor and temporary files

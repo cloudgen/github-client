@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="yt-client" default="build" basedir=".">
+    <property name="version" value="1.0.0"/>
+    <!-- Define project properties -->
+    <property file="project.ini"/>
+    <!-- Define project properties with defaults -->    
+    <property name="app.name" value="${ant.project.name}"/>
+    <property name="src.dir" value="src"/>
+    <property name="src.c.dir" value="${src.dir}/main/c"/>
+    <property name="src.cpp.dir" value="${src.dir}/main/cpp"/>
+    <property name="build.dir" value="target"/>
+    <property name="build.debug.dir" value="${build.dir}/debug"/>
+    <property name="version" value="1.0"/>
+    <property name="author" value="july.wong@gmail.com"/>
+    <property name="lib.versions" value="gtk+-3.0 webkit2gtk-4.1"/>
+    <property name="project.sh" value="./project.sh"/>
+    <property name="required.packages" value="build-essential libwebkit2gtk-4.1-dev"/>
+    <property name="avoided.packages" value=""/>
+    <macrodef name="replace-property" taskname="@{taskname}">
+        <attribute name="src" />
+        <attribute name="dest" default="" />
+        <attribute name="replace" default="" />
+        <attribute name="with" default="" />
+        <sequential>
+            <loadresource property="@{dest}">
+                <propertyresource name="@{src}" />
+                <filterchain>
+                    <tokenfilter>
+                        <filetokenizer/>
+                        <replacestring from="@{replace}" to="@{with}"/>
+                    </tokenfilter>
+                </filterchain>
+            </loadresource>
+        </sequential>
+    </macrodef>
+
+    <target name="check-c-sub-main">
+        <available file="${src.c.dir}/main.c" property="sub-main-exists"/>
+    </target>
+
+    <target name="check-cpp-sub-main">
+        <available file="${src.cpp.dir}/main.cpp" property="sub-main-exists"/>
+    </target>
+
+    <target name="do-if-main" depends="check-c-sub-main, check-cpp-sub-main, check-c-source, check-cpp-source" if="sub-main-exists">
+        <replace-property src="app.name" dest="app_name" replace="-" with="_"/>
+        <condition property="src.main.dir" value="${src.c.dir}">
+            <isset property="c.source.exists"/>
+        </condition>
+
+        <condition property="src.main.dir" value="${src.cpp.dir}">
+            <isset property="cpp.source.exists"/>
+        </condition>
+        <condition property="src.main.file" value="main.c">
+            <isset property="c.source.exists"/>
+        </condition>
+
+        <condition property="src.main.file" value="main.cpp">
+            <isset property="cpp.source.exists"/>
+        </condition>
+        <echo file="${src.main.dir}/Makefile.am" append="false"><![CDATA[${app_name}_SOURCES += ${src.main.file}
+]]></echo>        
+    </target> 
+
+    <target name="list-sources">
+        <condition property="src.list.dir" value="${src.c.dir}">
+            <isset property="c.source.exists"/>
+        </condition>
+        <condition property="src.list.dir" value="${src.cpp.dir}">
+            <isset property="cpp.source.exists"/>
+        </condition>
+        <condition property="src.list.files" value="**/*.c">
+            <isset property="c.source.exists"/>
+        </condition>
+        <condition property="src.list.files" value="**/*.cpp">
+            <isset property="cpp.source.exists"/>
+        </condition>
+
+        <echo message="Listing all source files in ${src.list.dir}:"/>
+        <fileset id="src.lists" dir="${src.list.dir}" includes="${src.list.files}"/> 
+        <property name="tmp-sources" refid="src.lists"/>
+        <replace-property src="tmp-sources" dest="tmp-src" replace=";" with=" ${src.list.dir}/"/>               
+        <property name="src.file.lists" value="${src.list.dir}/${tmp-src}"/>
+        <echo message="Source files: ${src.file.lists}"/>
+    </target>
+
+    <target name="generate-makefile" depends="check-c-source, check-cpp-source, list-sources">
+        <replace-property src="app.name" dest="app_name" replace="-" with="_"/>
+        <condition property="src.main" value="${src.c.dir}/main.c">
+            <isset property="c.source.exists"/>
+        </condition>
+
+        <condition property="src.main" value="${src.cpp.dir}/main.cpp">
+            <isset property="cpp.source.exists"/>
+        </condition>
+
+        <condition property="src.flag" value="CFLAGS">
+            <isset property="c.source.exists"/>
+        </condition>
+
+        <condition property="src.flag" value="CXXFLAGS">
+            <isset property="cpp.source.exists"/>
+        </condition>
+        <condition property="flag" value="${app_name}_${src.flag} = $(GTK_CFLAGS)&#10;${app_name}_LDADD = $(GTK_LIBS)" else="">
+            <contains string="${lib.versions}" substring="gtk"/>
+        </condition>
+        <echo file="Makefile.am" append="false"><![CDATA[bin_PROGRAMS = ${app.name}
+${app_name}_SOURCES = ${src.file.lists}
+${flag}
+]]></echo>
+    </target>
+
+    <target name="generate-configure">
+        <condition property="pkg-check" value="[GTK], " else="">
+            <contains string="${lib.versions}" substring="gtk"/>
+        </condition>
+        <condition property="ac-sub" value="AC_SUBST([GTK_CFLAGS])&#10;AC_SUBST([GTK_LIBS])&#10;" else="...">
+            <contains string="${lib.versions}" substring="gtk"/>
+        </condition>
+        <echo file="configure.ac" append="false"><![CDATA[AC_INIT([${app.name}], [${version}], [${author}])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
+AC_PROG_CC
+AC_PROG_CXX  # Add this line to define CXX
+PKG_CHECK_MODULES(${pkg-check}[${lib.versions}])
+${ac-sub}AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
+]]></echo>
+    </target>
+
+    <!-- Target to prepare directories -->
+    <target name="prepare" depends="generate-makefile,generate-configure,do-if-main">
+        <mkdir dir="${build.debug.dir}"/> 
+    </target>
+
+    <!-- Target to install required packages -->
+    <target name="install">
+        <echo file="${project.sh}" append="false"><![CDATA[#!/bin/bash
+# Export project variables
+export PRJ=${app.name}
+export SRC=${src.dir}
+export SRC_C=$SRC/main/c
+export BUILD=${build.dir}
+export BUILD_DEBUG=$BUILD/exe/debug
+# Variable name LIB reserved for ./configure
+export REQUIRED_LIBS="${lib.versions}"
+
+# Array of prerequisite packages
+REQUIRED_PACKAGES="${required.packages}"
+
+# Array of avoided packages
+AVOIDED_PACKAGES="${avoided.packages}"
+
+apt_install() {
+  RESULT=$(apt list --installed 2>&1 | grep "$2")
+  if [ -z "$RESULT" ]; then 
+    if [ -z "$1" ]; then
+      sudo apt update
+    fi
+    sudo apt install -y -qq "$2"
+    echo "1"
+  else 
+    echo "$1"
+  fi 
+}
+
+apt_uninstall() {
+  if apt list --installed 2>&1 | grep -q "$1"; then 
+    sudo apt purge --autoremove -y -qq "$1"
+  fi 
+}
+
+install() {
+  UPD=0
+  echo "$REQUIRED_PACKAGES" | tr ' ' '\n' | while read -r package; do
+    if [ ! -z "$package" ]; then
+      UPD=$(apt_install $UPD "$package")
+    fi
+  done
+
+  echo "$AVOIDED_PACKAGES" | tr ' ' '\n' | while read -r package; do
+    if [ ! -z "$package" ]; then
+      apt_uninstall "$package"
+    fi
+  done
+}
+
+install
+]]></echo>
+        <chmod file="${project.sh}" perm="755"/>
+        <exec executable="${project.sh}"/>
+    </target>
+
+    <target name="make" depends="prepare">
+        <exec executable="autoreconf" 
+            failonerror="false">
+            <arg value="--install"/>
+        </exec>
+        <exec executable="./configure"/>
+        <exec executable="make"/>
+        <move file="${app.name}" tofile="${build.debug.dir}/${app.name}"/>
+        <echo message="Please run: ${build.debug.dir}/${app.name}"/>
+    </target>
+
+    <target name="check-c-source">
+        <available file="${src.c.dir}/main.c" property="c.source.exists"/>
+    </target>
+
+    <target name="check-cpp-source">
+        <available file="${src.cpp.dir}/main.cpp" property="cpp.source.exists"/>
+    </target>
+
+    <!-- Target to compile the source code -->
+    <target name="compile" depends="install,check-c-source,check-cpp-source,list-sources">
+        <condition property="compiler" value="gcc">
+            <and>
+                <isset property="c.source.exists"/>
+                <not>
+                    <isset property="cpp.source.exists"/>
+                </not>
+            </and>
+        </condition>
+
+        <condition property="compiler" value="g++">
+            <and>
+                <isset property="cpp.source.exists"/>
+                <not>
+                    <isset property="c.source.exists"/>
+                </not>
+            </and>
+        </condition>
+
+        <condition property="compiler" value="g++">
+            <isset property="cpp.source.exists"/>
+        </condition>
+
+        <fail message="No valid source files found for compilation!" unless="compiler"/>
+        <echo message="Using compiler: ${compiler}"/>
+
+        <exec executable="pkg-config" 
+            failonerror="false" 
+            outputproperty="include-dirs">
+            <arg value="--cflags"/>
+            <arg value="--libs"/>
+            <arg line="${lib.versions}"/>
+        </exec>
+        
+        <exec executable="${compiler}" failonerror="true">
+            <arg line="${src.file.lists}"/>
+            <arg value="-o"/>
+            <arg value="${app.name}"/> <!-- Output to build directory -->
+            <arg line="${include-dirs}"/> <!-- Use pkg-config flags -->
+        </exec>
+    </target>
+    <!-- Target to move the compiled binary to the exec directory -->
+    <target name="move" depends="compile">
+        <mkdir dir="${build.debug.dir}"/> 
+        <move file="${app.name}" tofile="${build.debug.dir}/${app.name}"/> <!-- Move to the final location -->
+    </target>
+
+    <!-- Target to clean all generated files -->
+    <target name="clean" depends="check-c-source, check-cpp-source">
+        <echo message="Cleaning up generated files ...."/>
+        <delete dir="autom4te.cache"/>
+        <delete dir="${src.c.dir}/.deps"/>
+        <delete dir="${src.cpp.dir}/.deps"/>
+        <delete file="${src.c.dir}/Makefile.am"/>
+        <delete file="${src.cpp.dir}/Makefile.am"/>
+        <delete dir="${build.dir}"/>
+        <delete dir="build"/>
+        <delete dir=".gradle"/>
+        <delete file="Makefile"/>
+        <delete file="configure"/>
+        <delete file="aclocal.m4"/>
+        <delete file="config.log"/>
+        <delete file="config.status"/>
+        <delete file="Makefile.in"/>
+        <delete file="install-sh"/>
+        <delete file="compile"/>
+        <delete file="configure~"/>
+        <delete file="depcomp"/>
+        <delete file="missing"/>
+        <delete file="configuare.ac"/>
+        <delete file="Makefile.am"/>
+        <delete file="${src.c.dir}/.dirstamp"/>
+        <delete file="${src.cpp.dir}/.dirstamp"/>
+        <condition property="src.del.dir" value="${src.c.dir}">
+            <isset property="c.source.exists"/>
+        </condition>
+        <condition property="src.del.dir" value="${src.cpp.dir}">
+            <isset property="cpp.source.exists"/>
+        </condition>
+        <delete includeemptydirs="true">
+            <fileset dir="${src.del.dir}" includes="**/*.o"/>
+        </delete>
+        <delete file="${src.c.dir}/Makefile.in"/>
+        <delete file="${src.cpp.dir}/Makefile.in"/>
+    </target>
+
+    <!-- Target to build the application -->
+    <target name="build" depends="clean, move">
+        <echo message="Build completed. You can run the application with the command: ${build.debug.dir}/${app.name}"/>
+    </target>
+
+    <target name="check-exe">
+      <available file="${build.debug.dir}/${app.name}" property="exe-exists"/>
+    </target>
+
+    <target name="build-if-not-exists" depends="check-exe" unless="exe-exists">
+      <antcall target="build"/>
+    </target>
+
+    <!-- Target to run the application -->
+    <target name="run" depends="build-if-not-exists">
+        <exec executable="${build.debug.dir}/${app.name}"/>
+    </target>
+</project>
