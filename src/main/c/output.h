@@ -30,18 +30,27 @@ extern bool ciao_quiet_mode;
 extern bool ciao_json_mode;
 
 // =========================================================================
-// General Purpose Requirement: Initialize Output System
+// Core logging function - Single Source of Truth for ALL output
+//
+// Critical va_list Rule (Security & Correctness - CIAO enforced):
+//   This function takes va_list BY VALUE (not "...").
+//   The convenience wrappers (ciao_info, ciao_warn, etc.) do va_start()
+//   and pass the va_list to this function.
+//   Inside ciao_log we MUST use va_copy() before consuming it with
+//   g_strdup_vprintf(), because the list is advanced.
+//cd 
+//   NEVER change this back to "..." without also updating all wrappers.
+//   This prevents the "incorrectly passing a va_list" warning / UB.
+//
+// Protection Rule:
+//   Do NOT bypass this function. Do NOT use stdio directly.
 // =========================================================================
-void ciao_output_init(int argc, char **argv);
-
-// =========================================================================
-// Core logging function - Single Source of Output
-// =========================================================================
-void ciao_log(CiaoOutputLevel level, const char *format, ...);
+void ciao_log(CiaoOutputLevel level, const char *format, va_list ap);
 
 // =========================================================================
 // Convenience functions (Single Point of Entry)
 // =========================================================================
+void ciao_output_init(int argc, char **argv);
 void ciao_info(const char *format, ...);
 void ciao_warn(const char *format, ...);
 void ciao_error(const char *format, ...);

@@ -72,24 +72,44 @@ void ciao_output_init(int argc, char **argv)
 // 
 // Purpose:
 //   ALL output in the project must pass through this function.
-// 
+//   This is the Single Source of Truth for all console output.
+//
+// Critical va_list Rule (Security & Correctness):
+//   This function receives a va_list BY VALUE (not by pointer, not via ...).
+//   Inside this function we MUST use va_copy() before consuming the list
+//   because g_strdup_vprintf() (and similar GLib functions) will advance
+//   the va_list, leaving the original caller’s list in an indeterminate state.
+//
+//   NEVER change the signature to accept "..." again and call va_start here.
+//   NEVER pass a va_list from a convenience wrapper without va_copy().
+//
+//   Violating this causes:
+//     - "incorrectly passing a va_list" static analysis warnings
+//     - Undefined behavior on many ABIs (especially x86_64 and aarch64)
+//     - Potential format-string related security issues
+//
 // Why This Must Stay Strong:
 //   Prevents fragmentation of output logic (common failure in previous versions).
 //   Supports both human-readable and JSON structured output.
-// 
+//   Maintains strict GNOME compliance (only g_print / g_printerr allowed).
+//
 // Protection Rule:
-//   Do NOT bypass this function. Do NOT replace g_print/g_printerr with stdio.
-//   This is the heart of CIAO Single Source of Output principle.
+//   Do NOT bypass this function.
+//   Do NOT replace g_print/g_printerr with stdio functions.
+//   Do NOT modify the va_list handling logic without updating this comment.
+//   This is the heart of the CIAO Single Source of Output principle.
 // =========================================================================
-void ciao_log(CiaoOutputLevel level, const char *format, ...)
+void ciao_log(CiaoOutputLevel level, const char *format, va_list ap)   // Changed: va_list (by value), no ...
 {
     if (ciao_quiet_mode && level != CIAO_LEVEL_ERROR) {
         return;
     }
 
-    va_list args;
-    va_start(args, format);
-    gchar *message = g_strdup_vprintf(format, args);
+    // Make a copy because g_strdup_vprintf / g_vasprintf may consume the list
+    va_list ap_copy;
+    va_copy(ap_copy, ap);
+
+    gchar *message = g_strdup_vprintf(format, ap_copy);
 
     time_t now = time(NULL);
 
@@ -99,28 +119,28 @@ void ciao_log(CiaoOutputLevel level, const char *format, ...)
                 (level == CIAO_LEVEL_INFO) ? "INFO" :
                 (level == CIAO_LEVEL_WARNING) ? "WARN" :
                 (level == CIAO_LEVEL_ERROR) ? "ERROR" : "DEBUG",
-                message);
+                message ? message : "(null)");
     } else {
         switch (level) {
             case CIAO_LEVEL_INFO:
-                g_print("[INFO] %s\n", message);
+                g_print("[INFO] %s\n", message ? message : "(null)");
                 break;
             case CIAO_LEVEL_WARNING:
-                g_printerr("[WARN] %s\n", message);
+                g_printerr("[WARN] %s\n", message ? message : "(null)");
                 break;
             case CIAO_LEVEL_ERROR:
-                g_printerr("[ERROR] %s\n", message);
+                g_printerr("[ERROR] %s\n", message ? message : "(null)");
                 break;
             case CIAO_LEVEL_DEBUG:
                 if (debug_env_enabled) {
-                    g_print("[DEBUG] %s\n", message);
+                    g_print("[DEBUG] %s\n", message ? message : "(null)");
                 }
                 break;
         }
     }
 
     g_free(message);
-    va_end(args);
+    va_end(ap_copy);
 }
 
 // =========================================================================
