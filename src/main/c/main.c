@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     GtkWidget *file_menu = gtk_menu_new();
 
     // Bookmark menu (existing)
-    GtkWidget *bookmark_menu_item = add_bookmark_menu_yt(url_bar.url_entry);
+    GtkWidget *bookmark_menu_item = add_bookmark_menu_github(url_bar.url_entry);
     gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), bookmark_menu_item);
 
     // New: User Agent menu

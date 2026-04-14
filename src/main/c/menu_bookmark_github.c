@@ -69,10 +69,10 @@ static void on_menu_item_clicked(GtkMenuItem *menu_item, gpointer user_data)
 // Returns:
 //   GtkWidget* pointing to the top-level "Bookmark" menu item.
 // =========================================================================
-GtkWidget* add_bookmark_menu_yt(GtkEntry *url_entry)
+GtkWidget* add_bookmark_menu_github(GtkEntry *url_entry)
 {
     if (url_entry == NULL) {
-        ciao_error("add_bookmark_menu_yt: url_entry is NULL");
+        ciao_error("add_bookmark_menu_github: url_entry is NULL");
         return NULL;
     }
 

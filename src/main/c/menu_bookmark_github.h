@@ -43,6 +43,6 @@
 // Protection:
 //   Performs NULL check in implementation and logs via ciao_output system.
 // =========================================================================
-GtkWidget* add_bookmark_menu_yt(GtkEntry *url_entry);
+GtkWidget* add_bookmark_menu_github(GtkEntry *url_entry);
 
 #endif // MENU_BOOKMARK_GITHUB_H
