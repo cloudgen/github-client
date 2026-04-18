@@ -12,6 +12,7 @@
 #include "menu_user_agent.h"
 #include "output.h"
 #include "project.h"
+#include "settings.h"
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
@@ -28,6 +29,11 @@
 static void on_user_agent_activate(GtkMenuItem *menu_item, gpointer user_data)
 {
     const gchar *ua_string = (const gchar *)user_data;
+
+    if (ua_string == NULL || *ua_string == '\0') {
+        ciao_error("on_user_agent_activate: received empty or NULL User-Agent");
+        return;
+    }
 
     if (ua_string == NULL || *ua_string == '\0') {
         ciao_error("on_user_agent_activate: received empty or NULL User-Agent");
@@ -59,6 +65,9 @@ static void on_user_agent_activate(GtkMenuItem *menu_item, gpointer user_data)
 
     // Update the non-modifiable label under the address bar
     gtk_label_set_text(ua_label, ua_string);
+
+    // === NEW: Persist the change to settings.sqlite ===
+    save_user_agent_to_settings(ua_string);
 
     ciao_debug("User-Agent menu activated: %s", ua_string);
 }

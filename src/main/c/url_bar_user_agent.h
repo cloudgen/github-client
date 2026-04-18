@@ -1,13 +1,12 @@
+// url_bar_user_agent.h
 // =========================================================================
 // CIAO DEFENSIVE CODING STYLE - URL BAR + USER AGENT MODULE (GNOME + WebKitGTK)
 // =========================================================================
 //
 // !!! THIS IS A GNOME/GTK APPLICATION !!!
-// !!! DO NOT REMOVE OR MODIFY ANY HEADER OR FUNCTION COMMENT BLOCK !!!
+// !!! ONLY g_print() / g_printerr() ARE ALLOWED THROUGH ciao_* FUNCTIONS !!!
 // 
-// Note: This file replaces the original url_bar.h
-// Struct renamed to UrlBarUserAgent per project requirements.
-// Last aligned with SyncPrjs CIAO style: 2026-04-12
+// Last reviewed & aligned with CIAO 18 Principles: April 2026
 // =========================================================================
 
 #ifndef URL_BAR_USER_AGENT_H
@@ -17,25 +16,33 @@
 #include <webkit2/webkit2.h>
 
 // =========================================================================
-// URL Bar Structure (renamed to UrlBarUserAgent)
+// UrlBarUserAgent Structure
+// 
+// Purpose:
+//   Holds all widgets related to the URL bar and User-Agent display.
+//   This is the Single Source of Truth for the combined URL bar component.
+//
+// Protection Rule:
+//   Future AI must NOT rename this struct or change its fields without
+//   updating all call sites.
 // =========================================================================
 typedef struct {
     GtkEntry  *url_entry;
     GtkWidget *url_box;           // Container for URL entry + Go button
-    GtkLabel  *ua_label;          // Non-modifiable textbox showing current User-Agent
+    GtkLabel  *ua_label;          // Non-modifiable label showing current User-Agent
 } UrlBarUserAgent;
 
 // =========================================================================
 // Public API
 // 
 // Purpose:
-//   Creates URL bar + non-editable User-Agent label below it.
-//   Returns UrlBarUserAgent struct containing all widgets.
+//   Creates the complete URL bar with Go button and User-Agent label.
+//   This is the Single Point of Entry for URL bar creation.
 // 
 // Protection Rule:
-//   Future AI must NOT change this signature or struct name.
-//   All URL bar creation must go through this function.
+//   All signal connections must be established here. Do not move them.
 // =========================================================================
-UrlBarUserAgent add_url_bar_user_agent(WebKitWebView *web_view);
+UrlBarUserAgent add_url_bar_user_agent(WebKitWebView *web_view, 
+                                       const char *initial_ua);
 
 #endif // URL_BAR_USER_AGENT_H

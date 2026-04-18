@@ -1,181 +1,117 @@
-Here's the **updated README.md** with a new dedicated section on **"The Benefits of Using CIAO Defensive Programming Principles"**, plus more prominent and natural links to https://github.com/cloudgen/ciao.
-
-```markdown
 # github-client
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-1.0.1-blue.svg)](https://github.com/cloudgen/github-client/releases)
-[![CIAO](https://img.shields.io/badge/Philosophy-CIAO%20(Caution%20%E2%80%A2%20Intentional%20%E2%80%A2%20Anti--fragile%20%E2%80%A2%20Over--engineered)-purple.svg)](https://github.com/cloudgen/ciao)
+[![Version](https://img.shields.io/badge/Version-1.0.5-blue.svg)](https://github.com/cloudgen/github-client/releases)
+[![CIAO](https://img.shields.io/badge/Philosophy-CIAO%20Defensive-purple.svg)](https://github.com/cloudgen/ciao)
 [![GTK](https://img.shields.io/badge/UI-GTK%203-brightgreen.svg)](https://gtk.org)
 [![WebKit2](https://img.shields.io/badge/Engine-WebKit2GTK-orange.svg)](https://webkitgtk.org)
 
-**github-client** is a lightweight native GNOME desktop application that embeds a **WebKit2** web view, designed as a clean, dedicated wrapper for **GitHub**.
+**github-client** is a lightweight, native GNOME/Linux application that provides a clean, focused browsing experience for **GitHub** using WebKit2GTK.
 
-Instead of opening GitHub in a full web browser, you get a focused, native Linux window with persistent login, smart URL bar (supports Enter key), quick bookmarks, and minimal distractions.
+Instead of using a heavy Electron app or a full browser, you get a fast, native window with persistent login, intelligent URL bar, quick bookmarks, and User-Agent switching — all built with strict defensive programming.
 
-This project is built using the strict **[CIAO](https://github.com/cloudgen/ciao)** defensive programming philosophy.
+This project follows the **[CIAO](https://github.com/cloudgen/ciao)** Defensive Programming Philosophy.
 
 ---
 
 ## Features
 
-- Embedded WebKit2GTK browser engine
-- Persistent cookie storage (`~/.app/github-client/cookies/`) — stay logged in across sessions
-- Smart URL bar with real-time updating and **Enter key support** (same as clicking Go)
-- Quick bookmarks for GitHub and common pages
-- Clean menu bar (File → Bookmark / Exit, About → Show Version)
-- Lightweight and fast (much lighter than Electron-based apps)
-- Multiple build system support: Meson+Ninja (recommended), GNU Make, Gradle, Ant, and simple GCC
-- Fully compatible with **SyncPrjs** project synchronization tool
+- **Persistent User-Agent** with `settings.sqlite` (remembers your last choice)
+- **Persistent cookies** (`~/.app/github-client/cookies/cookies.sqlite`) — stay logged in
+- Smart URL bar with **Enter key support** (behaves like clicking "Go")
+- Real-time URL synchronization (`notify::uri` + fallback)
+- Quick GitHub bookmarks (Start Page, Profile)
+- User-Agent spoofing menu (Chrome default, Firefox, Safari, Edge)
+- Clean, native GTK3 interface
+- Extremely lightweight compared to Electron apps
+- Multi-build system support (Meson recommended)
+- Strong **[CIAO](https://github.com/cloudgen/ciao)** defensive coding style
 
 ---
 
-## The Benefits of Using CIAO Defensive Programming Principles
+## The Benefits of CIAO Defensive Programming
 
-This project follows the **[CIAO](https://github.com/cloudgen/ciao)** methodology — **Caution • Intentionality • Anti-fragility • Over-engineering** — a set of 18 defensive programming principles developed to create robust, long-lasting software.
+This project is built using the **[CIAO](https://github.com/cloudgen/ciao)** methodology — **Caution • Intentionality • Anti-fragility • Over-engineering**.
 
-### Why CIAO Matters Here:
+### Why it matters:
+- Code is highly resistant to accidental breakage by AI assistants or future maintainers
+- Critical functions are protected with explicit "Do Not Modify" rules
+- Excellent error handling and logging via centralized `ciao_*` system
+- Clear separation of concerns (`webkit_setup`, `ui_window_github`, `ui_menu_github`, etc.)
+- Easy to fork for other services (YouTube, GitLab, etc.)
 
-- **Anti-fragile code**: The application survives harsh environments, unexpected inputs, and future modifications without breaking.
-- **Resistance to "helpful" changes**: Heavy defensive comments and "DO NOT MODIFY" blocks protect critical functions (like URL bar signal handling) from being accidentally simplified or broken by AI assistants or future maintainers.
-- **Clear intent**: Every major function has explicit purpose, protection rules, and links to CIAO principles, making the codebase self-documenting and maintainable over years.
-- **Fewer runtime crashes**: Strict validation (e.g., `GTK_IS_ENTRY` checks) prevented Gtk-CRITICAL errors that previously occurred when signals were mismatched.
-- **Better long-term reliability**: By deliberately over-engineering safety nets (multiple signals, backups, fallbacks), the app remains stable even as WebKitGTK or GTK evolves.
-
-You can read the full **[18 CIAO Principles](https://github.com/cloudgen/ciao)** and see how they are applied in real projects in the official repository:  
-→ **[https://github.com/cloudgen/ciao](https://github.com/cloudgen/ciao)**
-
-Many core patterns in this project (defensive callbacks, signal protection, multi-build support, and persistent storage) directly come from applying CIAO rules.
-
----
-
-## Project Background & Credits
-
-- **Author**: Cloudgen Wong ([@cloudgen](https://github.com/cloudgen)) – Hong Kong
-- **Philosophy**: Built with strict **CIAO (Caution • Intentional • Anti-fragile • Over-engineered)** defensive principles.  
-  See **[CIAO-PRINCIPLES.md](CIAO-PRINCIPLES.md)** and the official repository: [https://github.com/cloudgen/ciao](https://github.com/cloudgen/ciao)
-- **Similar Project**:  
-  **[youtube-client](https://github.com/cloudgen/youtube-client)** — A similar lightweight native YouTube client using the same CIAO architecture, defensive patterns, and multi-build-system approach.
-- **Original Inspiration**: Heavily based on Wilgat’s family of “*-client” projects.
-- **SyncPrjs Compatibility**: Fully compatible with **[SyncPrjs](https://github.com/Wilgat/SyncPrjs)** by Wilgat.
+Read the full **[CIAO Principles](https://github.com/cloudgen/ciao)** here.
 
 ---
 
 ## Quick Start
 
-### 1. Install dependencies (Ubuntu / Debian)
+### Install dependencies (Ubuntu/Debian)
 
 ```bash
-./build.sh install
+sudo apt install meson ninja-build libgtk-3-dev libwebkit2gtk-4.1-dev libsqlite3-dev
 ```
 
-For Meson (recommended):
+### Build & Run
 
 ```bash
-sudo apt install meson ninja-build
+# Recommended (Meson)
+meson setup builddir --buildtype=debug
+cd builddir && ninja
+
+# Run
+./github-client
 ```
 
-### 2. Build the application
-
-**Recommended (fastest & cleanest):**
+Or use the convenience script:
 
 ```bash
-./build.sh clean && ./build.sh build
-```
-
-**Other build methods:**
-
-```bash
-# Meson + Ninja (modern, recommended for GTK apps)
-./build.sh meson
-
-# GNU Make / Autotools
-./build.sh make
-
-# Gradle
-./gradlew clean build
-
-# Ant (legacy)
-./build.sh ant
-```
-
-The executable will be available at:
-
-```
-target/exe/debug/github-client
-```
-
-### 3. Run
-
-```bash
-./target/exe/debug/github-client
+./build.sh clean && ./build.sh build && ./target/exe/debug/github-client
 ```
 
 ---
 
-## Usage
-
-- Type or paste a URL in the address bar and press **Enter** or click **Go**
-- Use **File → Bookmark** for quick access to GitHub pages
-- **About → Show Version** shows build and version information
-- Cookies and login sessions are automatically persisted
-
----
-
-## Build Methods
-
-Detailed guides for all supported build systems are available in the [`docs/`](docs/) folder:
-
-- **[docs/build-methods.md](docs/build-methods.md)** — Overview
-- **[docs/meson-steps.md](docs/meson-steps.md)** — Meson + Ninja (recommended)
-- **[docs/basic-steps.md](docs/basic-steps.md)** — Simple GCC
-- **[docs/gnu-make-steps.md](docs/gnu-make-steps.md)** — GNU Make / Autotools
-- **[docs/gradle-steps.md](docs/gradle-steps.md)** — Gradle
-- **[docs/ant-steps.md](docs/ant-steps.md)** — Ant (legacy)
-
----
-
-## Project Structure
+## Project Structure (Key Files)
 
 ```bash
-.
-├── README.md
-├── CIAO-PRINCIPLES.md
-├── build.sh
-├── build.gradle
-├── build.xml
-├── project.ini
-├── LICENSE
-├── SECURITY.md
-├── CHANGELOG.md
-├── docs/
-│   └── *.md          # Build guides
-└── src/
-    └── main/
-        └── c/        # Modular C source files
+src/main/c/
+├── main.c                    # Pure orchestration
+├── webkit_setup.c/h          # All WebKit + persistence setup
+├── ui_window_github.c/h      # Main window & layout
+├── ui_menu_github.c/h        # Menu bar construction
+├── url_bar_user_agent.c/h    # URL bar + UA label
+├── settings.c/h              # Persistent User-Agent via SQLite
+├── cookies.c/h               # Persistent cookies
+├── project.h                 # Single Source of Truth
+└── output.c/h                # Centralized logging system
 ```
 
 ---
 
-## Technologies
+## Philosophy & Credits
 
-- **GTK+ 3** — Native UI toolkit
-- **WebKit2GTK** — Modern web rendering engine
-- **C** — Clean, modular, defensive implementation
-- Multi-build-system support for maximum flexibility
+- **Author**: Cloudgen Wong ([@cloudgen](https://github.com/cloudgen)) – Hong Kong
+- **Core Philosophy**: Strict **[CIAO Defensive Programming](https://github.com/cloudgen/ciao)**
+- **Inspired by**: Wilgat’s family of native client projects
+- **Compatible with**: [SyncPrjs](https://github.com/Wilgat/SyncPrjs)
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
 ---
 
 ## Related Projects
 
-- **[youtube-client](https://github.com/cloudgen/youtube-client)** — Similar lightweight native YouTube client using the same CIAO architecture.
-- **Wilgat’s pix-client**: https://github.com/Wilgat/pix-client (original inspiration)
-- **Wilgat’s SyncPrjs**: https://github.com/Wilgat/SyncPrjs (project synchronization tool – fully compatible)
+- **[CIAO Principles Repository](https://github.com/cloudgen/ciao)**
+- Similar clients built with the same architecture
 
 ---
 
-**Last updated:** April 2026
+**Last updated:** April 18, 2026
 
 Made with ❤️ and extreme caution.
 
-Happy coding and native GitHub browsing!
+Happy native GitHub browsing!

@@ -7,58 +7,20 @@
 // !!! ONLY g_print() / g_printerr() ARE ALLOWED THROUGH ciao_* FUNCTIONS !!!
 // !!! ALL WARNINGS AND LOGS MUST USE ciao_* SYSTEM !!!
 // 
+// Uses the generic callback on_menu_bookmark_clicked from menu_bookmark.c
+//
+// =========================================================================
 // Last aligned with SyncPrjs CIAO style + GNOME + Output System: 2026-04-12
 // =========================================================================
 
 #include "menu_bookmark_github.h"
+#include "menu_bookmark.h"
 #include "output.h"
 #include "project.h"
 #include "load_page.h"
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-// =========================================================================
-// Internal Callback: Bookmark Menu Item Activated
-// 
-// Purpose:
-//   Loads the selected bookmark URL and updates the URL bar.
-// 
-// Protection Rule:
-//   Future AI must NOT remove NULL checks or bypass load_page().
-// =========================================================================
-static void on_menu_item_clicked(GtkMenuItem *menu_item, gpointer user_data)
-{
-    const gchar *url = (const gchar *)user_data;
-
-    if (url == NULL || *url == '\0') {
-        ciao_error("on_menu_item_clicked: received empty or NULL URL");
-        return;
-    }
-
-    // Retrieve URL entry from menu item data
-    GtkEntry *entry = GTK_ENTRY(g_object_get_data(G_OBJECT(menu_item), "url_entry"));
-    if (entry == NULL) {
-        ciao_error("on_menu_item_clicked: url_entry not found in menu item data");
-        return;
-    }
-
-    // Retrieve web view from entry's user data
-    WebKitWebView *web_view = g_object_get_data(G_OBJECT(entry), "web_view");
-
-    if (!WEBKIT_IS_WEB_VIEW(web_view)) {
-        ciao_warn("Invalid WebKitWebView reference in bookmark menu");
-        return;
-    }
-
-    ciao_debug("Bookmark activated: %s", url);
-
-    load_page(web_view, url);
-
-    // Update URL bar
-    gtk_entry_set_text(entry, url);
-
-    ciao_info("Navigated to bookmark: %s", url);
-}
 
 // =========================================================================
 // General Purpose Requirement: Create GitHub Bookmark Menu
@@ -86,11 +48,11 @@ GtkWidget* add_bookmark_menu_github(GtkEntry *url_entry)
 
     // Connect signals with bookmark URLs from project.h
     g_signal_connect_data(start_menu_item,   "activate",
-                         G_CALLBACK(on_menu_item_clicked),
+                         G_CALLBACK(on_menu_bookmark_clicked),
                          (gpointer)START_PAGE, NULL, 0);
 
     g_signal_connect_data(profile_menu_item, "activate",
-                         G_CALLBACK(on_menu_item_clicked),
+                         G_CALLBACK(on_menu_bookmark_clicked),
                          (gpointer)PROFILE_PAGE, NULL, 0);
 
     // Build menu structure

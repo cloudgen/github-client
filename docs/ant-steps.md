@@ -9,7 +9,7 @@ The goal of this project is to create a GNOME application that serves as a simpl
 To maintain an organized project structure, the following folder layout is recommended:
 
 ```
-yt-client/
+github-client/
 ├── src/
 │   └── main/
 │       └── c/
@@ -48,7 +48,7 @@ The `build.xml` file defines the build process and contains several target tasks
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<project name="yt-client" default="build" basedir=".">
+<project name="github-client" default="build" basedir=".">
     <!-- Define project properties -->
     <property file="project.ini"/>
     <property name="app.name" value="${PRJ}"/>
@@ -303,14 +303,14 @@ Priority: optional
 Architecture: amd64
 Depends: ${runtime.packages}
 Maintainer: ${author}
-Description: A simple Youtube Client application.
+Description: A simple Github Client application.
  A brief description of your application that provides more detail.
 ]]></echo>
 
         <echo file="${build.dir}/${app.name}/usr/share/applications/${app.name}.desktop" append="false"><![CDATA[
 [Desktop Entry]
-Name=Youtube Client
-Comment=View your Youtube Client in a simple interface
+Name=Github Client
+Comment=View your Github Client in a simple interface
 Exec=${app.name}
 Icon=/path/to/icon.png  # Update with your icon path
 Terminal=false
@@ -390,8 +390,8 @@ The `executable="pkg-config"` in the compile task is necessary to retrieve the c
 3. **Create Project Directory Structure**:
    Create the necessary directories for your project:
    ```bash
-   mkdir -p yt-client/src/main/c
-   cd yt-client
+   mkdir -p github-client/src/main/c
+   cd github-client
    ```
 
 4. **Write the Application Code**:
@@ -401,8 +401,8 @@ The `executable="pkg-config"` in the compile task is necessary to retrieve the c
 #ifndef PROJECT_H
 #define PROJECT_H
 
-#define PROJECT_ID "yt-client"
-#define PROJECT_NAME "Youtube Viewer"
+#define PROJECT_ID "github-client"
+#define PROJECT_NAME "Github Viewer"
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 0
 #define VERSION_PATCH 1
@@ -533,7 +533,7 @@ int main(int argc, char *argv[]) {
 5. **Create the `project.ini` File**:
     Create a `project.ini` file in the project root with the following content:
     ```
-PRJ=yt-client
+PRJ=github-client
 SRC=src
 BUILD=target
 VERSION=1.0
@@ -546,7 +546,7 @@ LIB_VERSIONS=gtk+-3.0 webkit2gtk-4.1
    Create a `build.xml` file in the project root with the following content:
    ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<project name="yt-client" default="build" basedir=".">
+<project name="github-client" default="build" basedir=".">
     <!-- Define project properties -->
     <property file="project.ini"/>
 
@@ -798,14 +798,14 @@ Priority: optional
 Architecture: amd64
 Depends: ${runtime.packages}
 Maintainer: ${author}
-Description: A simple Youtube Client application.
+Description: A simple Github Client application.
  A brief description of your application that provides more detail.
 ]]></echo>
 
         <echo file="${build.dir}/${app.name}/usr/share/applications/${app.name}.desktop" append="false"><![CDATA[
 [Desktop Entry]
-Name=Youtube Client
-Comment=View your Youtube Client in a simple interface
+Name=Github Client
+Comment=View your Github Client in a simple interface
 Exec=${app.name}
 Icon=/path/to/icon.png  # Update with your icon path
 Terminal=false

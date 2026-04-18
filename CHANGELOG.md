@@ -1,10 +1,3 @@
-Here's a clean, professional, and well-structured **CHANGELOG.md** tailored for your project:
-
-**Repository**: https://github.com/cloudgen/github-client
-
-### Final `CHANGELOG.md`
-
-```markdown
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -12,52 +5,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.4] - 2026-04-18
+
 
 ### Added
-- Support for pressing **Enter** key in the URL bar to trigger navigation (same behavior as clicking the "Go" button).
-- Strong defensive comment blocks across all URL bar callbacks (`on_uri_changed`, `on_load_changed`, `on_go_button_clicked`, and `add_url_bar_user_agent`) to protect against accidental modification by AI or future maintainers.
-- Improved real-time URL bar synchronization using `notify::uri` as primary signal with `load-changed` as fallback.
+- Persistent User-Agent settings using `settings.sqlite` (stored alongside cookies).
+- User-Agent selected at startup now correctly displays in the UI label (previously showed default Chrome until changed).
+- `webkit_setup.c/h` module — Single Point of Truth for all WebKitWebContext, cookie, and User-Agent initialization.
+- `ui_window_github.c/h` and `ui_menu_github.c/h` modules for better separation of concerns.
+- Strong CIAO defensive protection comments on critical functions (`create_main_window()`, `build_main_menu_bar()`, etc.).
+- `PROJECT_DESCRIPTION` constant in `project.h` (Single Source of Truth).
 
 ### Changed
-- Updated URL bar module (`url_bar_user_agent.c`) to follow strict CIAO defensive programming principles (18 rules).
-- Enhanced signal connections and input validation for better reliability during link clicks and manual URL entry.
+- `main.c` is now pure orchestration (very clean and short).
+- `add_url_bar_user_agent()` now accepts an `initial_ua` parameter to respect persisted settings.
+- Enhanced protection rules to preserve GitHub-specific UI modules when forking to other projects.
+- Updated version dialog to use centralized `PROJECT_DESCRIPTION`.
 
 ### Fixed
-- Gtk-CRITICAL assertion error (`gtk_entry_get_text: assertion 'GTK_IS_ENTRY (entry)' failed`) caused by incorrect signal-to-callback matching.
-- Broken URL bar updates when clicking links inside the WebKitWebView.
+- UI label under URL bar now shows correct persisted User-Agent on application startup.
+- Duplicate loading of User-Agent settings at startup.
+
+---
+
+## [1.0.3] - 2026-04-18
+
+### Added
+- Full User-Agent spoofing menu (Chrome, Firefox, Safari, Edge) with Chrome as default.
+- Persistent cookie storage using SQLite.
+- Advanced output system with `--quiet`, `--json`, and `DEBUG=1` support.
+- Generic bookmark system + GitHub-specific bookmarks.
+- Real-time URL bar synchronization (`notify::uri` + `load-changed` fallback).
+- Enter key support in URL bar.
+
+### Changed
+- Migrated to strong CIAO Defensive Programming style across the entire codebase.
+- All User-Agent strings centralized in `project.h`.
 
 ---
 
 ## [1.0.0] - 2026-04-14
 
 ### Added
-- Initial release of GitHub Client – a lightweight GNOME/WebKitGTK-based GitHub browser.
-- URL bar with "Go" button and User-Agent display.
-- Real-time URL synchronization using `notify::uri` and `load-changed` signals.
-- Defensive CIAO-style coding throughout the codebase.
-- Basic navigation support via WebKitWebView.
-
-### Features
-- Modern GTK4 + WebKit2 integration
-- Custom User-Agent support
-- Structured output system (`ciao_*` functions)
-- Strong protection against accidental code simplification
+- Initial release of lightweight native GitHub client using GTK3 + WebKit2GTK.
+- Basic URL bar and navigation.
+- Defensive coding foundation (CIAO principles).
 
 ---
 
 ## How to Maintain This File
 
-When making a new release:
-1. Move the content from `[Unreleased]` into a new version section with the release date.
-2. Create a fresh `[Unreleased]` section at the top.
-3. Use these categories (in order):
-   - **Added** for new features
-   - **Changed** for changes in existing functionality
-   - **Deprecated** for soon-to-be-removed features
-   - **Removed** for now-removed features
-   - **Fixed** for bug fixes
-   - **Security** for security-related changes
+When releasing a new version:
+1. Move `[Unreleased]` content into a new version header with today's date.
+2. Add a fresh `[Unreleased]` section at the top.
+3. Use the standard categories: **Added**, **Changed**, **Fixed**, etc.
 
 ---
 
@@ -67,19 +68,3 @@ When making a new release:
 ---
 
 Made with ❤️ and extreme caution.
-```
-
-### Recommendations:
-
-1. Save this as `CHANGELOG.md` in the root of your repository.
-2. Update the version number and date when you make the next release.
-3. You can expand the `[1.0.0]` section later if you want to add more details about the initial features.
-
-Would you like me to adjust anything?
-
-- Make it shorter?
-- Add more technical details?
-- Include links to specific commits or PRs?
-- Add a Chinese version alongside?
-
-Just tell me your preference and I’ll refine it quickly.
