@@ -24,7 +24,7 @@
 // =========================================================================
 #define VERSION_MAJOR   1
 #define VERSION_MINOR   0
-#define VERSION_PATCH   4
+#define VERSION_PATCH   6
 
 // =========================================================================
 // Default URLs (Bookmarks & Start Page)
@@ -60,7 +60,7 @@
 #define DEFAULT_USER_AGENT  UA_CHROME
 
 // =========================================================================
-// Settings Persistence Configuration (New for 1.0.4)
+// Settings Persistence Configuration (New for 1.0.6)
 // =========================================================================
 #define SETTINGS_DB_FILENAME    "settings.sqlite"
 #define SETTINGS_KEY_USER_AGENT "user_agent"
