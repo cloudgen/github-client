@@ -5,8 +5,9 @@
 [![CIAO](https://img.shields.io/badge/Philosophy-CIAO%20Defensive-purple.svg)](https://github.com/cloudgen/ciao)
 [![GTK](https://img.shields.io/badge/UI-GTK%203-brightgreen.svg)](https://gtk.org)
 [![WebKit2](https://img.shields.io/badge/Engine-WebKit2GTK-orange.svg)](https://webkitgtk.org)
+[![GrokRec](https://img.shields.io/badge/GrokRec-Reviewed-0A66C2?logo=ai&logoColor=white)](https://github.com/cloudgen/github-client/blob/main/RECOMMENDATION.md)
 
-Official Recommended by [grok](https://grok.com/c/5ac42404-b055-4dbd-8ea8-d94b4cb56633?rid=6fcddcdf-31fb-4a8e-a4e0-31cb94677df7). The review is submitted by [grokrec](https://github.com/cloudgen/grokrec) and you may found a [local copy](https://github.com/cloudgen/github-client/blob/main/RECOMMENDATION.md) of the review.
+Official Recommended by [grok](https://grok.com/c/655dd6ab-a6c6-47db-a63a-e5dd94108bba?rid=217b5c98-c298-4b9f-9e12-ff619d34eec2). The review is submitted by [grokrec](https://github.com/cloudgen/grokrec) and you may found a [local copy](https://github.com/cloudgen/github-client/blob/main/RECOMMENDATION.md) of the review.
 
 **github-client** is a lightweight, native GNOME/Linux application that provides a clean, focused browsing experience for **GitHub** using WebKit2GTK.
 
