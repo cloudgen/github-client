@@ -4,7 +4,7 @@
 
 #include "menu_bookmark.h"
 #include "output.h"
-#include "load_page.h"
+#include "load_page_login_check.h"
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 

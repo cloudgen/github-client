@@ -4,7 +4,7 @@
 //
 // Purpose:
 //   Provides a reusable bookmark callback that can be used across
-//   different projects (YouTube, GitHub, etc.).
+//   different projects (YouTube, Github, etc.).
 //
 // Protection Rule:
 //   This file contains only generic logic. No project-specific code.

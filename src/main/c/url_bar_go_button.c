@@ -39,13 +39,31 @@
 // =========================================================================
 
 #include "output.h"
-#include "load_page.h"
+#include "load_page_login_check.h"
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-// =============================================================================
+// ──────────────────────────────────────────────
 // on_go_button_clicked() - Callback for Go Button Click Event
-// =============================================================================
+// ──────────────────────────────────────────────
+//
+// Purpose:
+//   Handles the "clicked" signal from the Go button in the URL bar.
+//   Retrieves the URL from the GtkEntry, performs defensive validation,
+//   looks up the associated WebKitWebView via g_object_get_data, and calls load_page().
+//   This is the **Single Point of Entry** for manual URL navigation initiated by the user.
+//
+// Parameters:
+//   Input:
+//     - button    : GtkButton* - The Go button (unused)
+//     - user_data : gpointer - Expected to be GtkEntry* containing the URL
+//   Output/Return: None (void callback)
+//
+// Dependencies:
+//   - Functions called: GTK_ENTRY(), gtk_entry_get_text(), g_object_get_data(),
+//     WEBKIT_IS_WEB_VIEW(), ciao_error(), ciao_warn(), ciao_info(), load_page()
+//   - Headers required: gtk/gtk.h, webkit2/webkit2.h, url_bar_callbacks.h, output.h, load_page.h
+//   - External: Connected from Go button "clicked" and URL entry "activate" signals
 //
 // GENERAL PURPOSE:
 //   Handles the "clicked" signal from the Go button in the URL bar.
@@ -87,7 +105,8 @@
 //   while strictly adhering to the 18 CIAO Defensive Programming Principles.
 //
 // Last reviewed & aligned with CIAO 18 Principles: April 2026
-// =============================================================================
+// Last updated: Full CIAO expansion with Parameters & Dependencies (2026-05-08)
+// ──────────────────────────────────────────────
 void on_go_button_clicked(GtkButton *button, gpointer user_data)
 {
     (void)button;

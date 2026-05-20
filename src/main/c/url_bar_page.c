@@ -39,13 +39,31 @@
 // =========================================================================
 
 #include "output.h"
-#include "load_page.h"
+#include "load_page_login_check.h"
+#include "login_detector_app.h"
+#include "project.h"
+#include "auto_follow.h"
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-// =========================================================================
+// ──────────────────────────────────────────────
 // on_load_changed() - Secondary fallback callback for page load finished
-// =========================================================================
+// ──────────────────────────────────────────────
+//
+// Purpose:
+//   Updates the URL bar when a full page load completes (WEBKIT_LOAD_FINISHED).
+//
+// Parameters:
+//   Input:
+//     - web_view    : WebKitWebView*
+//     - load_event  : WebKitLoadEvent
+//     - user_data   : gpointer - Expected to be GtkEntry*
+//   Output/Return: None
+//
+// Dependencies:
+//   - Functions called: webkit_web_view_get_uri(), GTK_ENTRY(), gtk_entry_set_text(),
+//     ciao_warn(), ciao_error(), ciao_debug()
+//   - Headers required: webkit2/webkit2.h, gtk/gtk.h, output.h
 //
 // GENERAL PURPOSE:
 //   Updates the URL bar when a full page load completes (WEBKIT_LOAD_FINISHED).
@@ -83,10 +101,11 @@
 //   strictly following the 18 CIAO Defensive Programming Principles.
 //
 // Last reviewed & aligned with CIAO 18 Principles: April 2026
-// =========================================================================
+// Last updated: Full CIAO expansion with Parameters & Dependencies (2026-05-08)
+// ──────────────────────────────────────────────
 void on_load_changed(WebKitWebView *web_view, 
-                           WebKitLoadEvent load_event, 
-                           gpointer user_data)
+                     WebKitLoadEvent load_event, 
+                     gpointer user_data)
 {
     if (load_event != WEBKIT_LOAD_FINISHED) return;
 
@@ -106,9 +125,84 @@ void on_load_changed(WebKitWebView *web_view,
     ciao_debug("URL bar updated after page load: %s", url);
 }
 
-// =============================================================================
+// ──────────────────────────────────────────────
+// auto_follow_urls - List of bot URLs that should trigger auto-follow
+// ──────────────────────────────────────────────
+//
+// Purpose:
+//   Static array of bot URLs that should trigger the auto-follow script injection.
+//
+// Parameters:
+//   Input: None (static constant)
+//   Output/Return: None
+//
+// Dependencies:
+//   - Constants from: project.h (ROCKYLINUX_PAGE, CIRCUIT_ANALYSIS, etc.)
+//   - Used by: on_uri_changed()
+//
+// Protection Rule (Sacred):
+//   Do NOT add or remove entries without explicit instruction.
+//   This list must stay synchronized with the AutoClick feature.
+//
+// Last updated: Full CIAO expansion (2026-05-08)
+// ──────────────────────────────────────────────
+static const char *auto_follow_urls[] = {
+    NULL  // sentinel
+};
+
+// ──────────────────────────────────────────────
+// delayed_auto_follow() - Delayed Auto-Follow Injection
+// ──────────────────────────────────────────────
+//
+// Purpose:
+//   Timer callback that injects the auto-follow script after a short delay.
+//
+// Parameters:
+//   Input:
+//     - user_data : gpointer - Expected to be WebKitWebView*
+//   Output/Return:
+//     - gboolean - Always G_SOURCE_REMOVE (one-shot timer)
+//
+// Dependencies:
+//   - Functions called: inject_auto_follow_script(), WEBKIT_IS_WEB_VIEW()
+//   - Headers required: webkit2/webkit2.h, auto_follow.h
+//
+// Last updated: Full CIAO expansion (2026-05-08)
+// ──────────────────────────────────────────────
+static gboolean delayed_auto_follow(gpointer user_data)
+{
+    WebKitWebView *web_view = WEBKIT_WEB_VIEW(user_data);
+
+    if (WEBKIT_IS_WEB_VIEW(web_view)) {
+        inject_auto_follow_script(web_view);
+    }
+
+    return G_SOURCE_REMOVE;
+}
+
+
+// ──────────────────────────────────────────────
 // on_uri_changed() - Primary Callback for WebKitWebView "notify::uri" Signal
-// =============================================================================
+// ──────────────────────────────────────────────
+//
+// Purpose:
+//   Handles the GObject property notification signal "notify::uri".
+//   This is the **primary and most reliable** mechanism to keep the URL bar
+//   synchronized with the actual current page URI in real time.
+//
+// Parameters:
+//   Input:
+//     - object    : GObject*
+//     - pspec     : GParamSpec*
+//     - user_data : gpointer - Expected to be GtkEntry*
+//   Output/Return: None
+//
+// Dependencies:
+//   - Functions called: WEBKIT_WEB_VIEW(), GTK_ENTRY(), gtk_entry_set_text(),
+//     webkit_web_view_get_uri(), g_strcmp0(), g_str_has_prefix(), g_strrstr(),
+//     ciao_error(), ciao_warn(), ciao_debug(), ciao_info(), delayed_auto_follow()
+//   - Headers required: gobject/gobject.h, webkit2/webkit2.h, gtk/gtk.h,
+//     output.h, auto_follow.h, project.h
 //
 // GENERAL PURPOSE:
 //   Handles the GObject property notification signal "notify::uri".
@@ -143,9 +237,21 @@ void on_load_changed(WebKitWebView *web_view,
 //     - Use of webkit_web_view_get_uri() to retrieve the current URI
 //     - Safe gtk_entry_set_text() only after validation
 //
-//   Replacing this callback with "load-changed" (or removing the GTK_IS_ENTRY check)
-//   has repeatedly caused Gtk-CRITICAL assertions ("gtk_entry_get_text: assertion
-//   'GTK_IS_ENTRY (entry)' failed") and broken URL bar updates on internal link clicks.
+//   === ANTI-HARDCODING RULE (CRITICAL) ===
+//   **NEVER HARD CODE ANY URL** inside this function (or any related login/start-page logic).
+//   Always use the `START_PAGE` constant from project.h (Single Source of Truth).
+//
+//   Previous Grok instances repeatedly violated this by injecting hardcoded
+//   "https://www.example.com", "https://example.com",  or Github domains.
+//   This is **explicitly forbidden**.
+//
+//   All domain/start-page decisions MUST go through:
+//     - START_PAGE constant
+//     - should_enable_login_check() if it exists
+//     - g_str_has_prefix(uri, START_PAGE)
+//
+//   Violating this breaks CIAO Principle 5 and causes maintenance nightmares
+//   when domains change or when supporting multiple start pages.
 //
 // !!! DO NOT MODIFY OR SIMPLIFY THIS FUNCTION !!!
 //   This is the battle-tested, bulletproof callback for real-time URL tracking in
@@ -155,8 +261,9 @@ void on_load_changed(WebKitWebView *web_view,
 //   It is designed to be reusable in other GNOME/WebKitGTK browser-like applications
 //   while strictly following the 18 CIAO Defensive Programming Principles.
 //
-// Last reviewed & aligned with CIAO 18 Principles: April 2026
-// =============================================================================
+// Last reviewed & aligned with CIAO 18 Principles + ANTI-HARDCODING RULE: May 2026
+// Last updated: Full CIAO expansion with Parameters & Dependencies (2026-05-08)
+// ──────────────────────────────────────────────
 void on_uri_changed(GObject *object, GParamSpec *pspec, gpointer user_data)
 {
     (void)pspec;
@@ -180,5 +287,29 @@ void on_uri_changed(GObject *object, GParamSpec *pspec, gpointer user_data)
         ciao_debug("URL bar updated via notify::uri: %s", uri);
     } else {
         ciao_warn("on_uri_changed: webkit_web_view_get_uri returned NULL or empty");
+    }
+
+    gboolean should_follow = FALSE;
+
+    for (int i = 0; auto_follow_urls[i] != NULL; i++) {
+        const char *target = auto_follow_urls[i];
+
+        if (g_strcmp0(uri, target) == 0) {
+            should_follow = TRUE;
+            ciao_info("[AUTO-FOLLOW] HIT → %s  (index %d)", target, i);
+            break;
+        }
+
+        if (g_str_has_prefix(uri, target) || g_strrstr(uri, target) != NULL) {
+            ciao_debug("[AUTO-FOLLOW] PARTIAL match: %s  ←  %s", uri, target);
+        }
+    }
+
+    if (should_follow) {
+        guint delay_ms = 800;
+        ciao_info("[AUTO-FOLLOW] Scheduling injection in %u ms...", delay_ms);
+        g_timeout_add(delay_ms, delayed_auto_follow, web_view);
+    } else {
+        ciao_debug("[AUTO-FOLLOW] MISS — not in auto_follow_urls list");
     }
 }

@@ -26,6 +26,11 @@ typedef enum {
     CIAO_LEVEL_DEBUG
 } CiaoOutputLevel;
 
+// =========================================================================
+// Global configuration variables (Single Source of Truth)
+// =========================================================================
+extern int ciao_shutdown_seconds;
+extern int ciao_bookmark_index;
 extern bool ciao_quiet_mode;
 extern bool ciao_json_mode;
 
@@ -50,6 +55,7 @@ void ciao_log(CiaoOutputLevel level, const char *format, va_list ap);
 // =========================================================================
 // Convenience functions (Single Point of Entry)
 // =========================================================================
+
 void ciao_output_init(int argc, char **argv);
 void ciao_info(const char *format, ...);
 void ciao_warn(const char *format, ...);

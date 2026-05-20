@@ -21,6 +21,9 @@
 #include <stddef.h>
 #include "project.h"
 
+// Debug reporting (only active when DEBUG=1)
+void debug_report_settings_structure(void);
+
 // =========================================================================
 // Initialize settings storage (creates directory if needed)
 // 
